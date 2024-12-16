@@ -28,19 +28,27 @@ class Ball:
         turtle.end_fill()
 
     def bounce_off_vertical_wall(self):
-        self.vx = -self.vx
-        self.count += 1
+        self.vx = -self.vx  # Reverse direction in the x direction
+        # Position the ball within the frame.
+        if self.x > 0:  # Right edge
+            self.x = self.canvas_width - self.size
+        elif self.x < 0:  # Left edge
+            self.x = -self.canvas_width + self.size
 
     def bounce_off_horizontal_wall(self):
-        self.vy = -self.vy
-        self.count += 1
+        self.vy = -self.vy  # Reverse direction in y direction
+        # Position the ball within the frame.
+        if self.y > 0:  # Top edge
+            self.y = self.canvas_height - self.size
+        elif self.y < 0:  # Bottom edge
+            self.y = -self.canvas_height + self.size
 
     def bounce_off(self, that):
         dx  = that.x - self.x
         dy  = that.y - self.y
         dvx = that.vx - self.vx
         dvy = that.vy - self.vy
-        dvdr = dx*dvx + dy*dvy; # dv dot dr
+        dvdr = dx*dvx + dy*dvy # dv dot dr
         dist = self.size + that.size   # distance between particle centers at collison
 
         # magnitude of normal force
@@ -103,30 +111,33 @@ class Ball:
 
     def time_to_hit_vertical_wall(self):
         if self.vx > 0:
-            return (self.canvas_width - self.x - self.size) / self.vx
+            return (self.canvas_width - self.size - self.x) / self.vx  # Hit the right edge
         elif self.vx < 0:
-            return (self.canvas_width + self.x - self.size) / (-self.vx)
+            return (self.x - self.size + self.canvas_width) / -self.vx  # Hit the left edge
         else:
-            return math.inf
+            return math.inf  # Does not move in the x direction
 
     def time_to_hit_horizontal_wall(self):
         if self.vy > 0:
-            return (self.canvas_height - self.y - self.size) / self.vy
+            return (self.canvas_height - self.size - self.y) / self.vy  # Hit the top edge
         elif self.vy < 0:
-            return (self.canvas_height + self.y - self.size) / (-self.vy)
+            return (self.y - self.size + self.canvas_height) / -self.vy  # Hit the bottom edge
         else:
-            return math.inf
+            return math.inf  # does not move in the y direction
 
     def time_to_hit_paddle(self, paddle):
-        if (self.vy > 0) and ((self.y + self.size) > (paddle.location[1] - paddle.height/2)):
+        if self.vy == 0:  # If the ball has not moved yet
+            return math.inf  # No chance of colliding with paddle
+
+        if (self.vy > 0) and ((self.y + self.size) > (paddle.location[1] - paddle.height / 2)):
             return math.inf
-        if (self.vy < 0) and ((self.y - self.size) < (paddle.location[1] + paddle.height/2)):
+        if (self.vy < 0) and ((self.y - self.size) < (paddle.location[1] + paddle.height / 2)):
             return math.inf
 
-        dt = (math.sqrt((paddle.location[1] - self.y)**2) - self.size - paddle.height/2) / abs(self.vy)
-        paddle_left_edge = paddle.location[0] - paddle.width/2
-        paddle_right_edge = paddle.location[0] + paddle.width/2
-        if paddle_left_edge - self.size <= self.x + (self.vx*dt) <= paddle_right_edge + self.size:
+        dt = (math.sqrt((paddle.location[1] - self.y)**2) - self.size - paddle.height / 2) / abs(self.vy)
+        paddle_left_edge = paddle.location[0] - paddle.width / 2
+        paddle_right_edge = paddle.location[0] + paddle.width / 2
+        if paddle_left_edge - self.size <= self.x + (self.vx * dt) <= paddle_right_edge + self.size:
             return dt
         else:
             return math.inf
@@ -137,3 +148,5 @@ class Ball:
 
     def __str__(self):
         return str(self.x) + ":" + str(self.y) + ":" + str(self.vx) + ":" + str(self.vy) + ":" + str(self.count) + str(self.id)
+    
+    
